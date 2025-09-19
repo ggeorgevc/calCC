@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js');
+      }
+    </script>
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>🍩 Calculadora de Churros y Más</title>
+    <style>
+      body {
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background: #fafafa;
+        color: #111;
+      }
+      .app {
+        max-width: 520px;
+        margin: auto;
+        background: #fff;
+        padding: 20px;
+        border-radius: 16px;
+        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.05);
+      }
+      h1 {
+        text-align: center;
+        margin: 0 0 10px;
+      }
+      .toolbar {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        margin: 8px 0 14px;
+      }
+      .btn {
+        border: 1px solid #e5e7eb;
+        background: #fff;
+        padding: 8px 12px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 700;
+      }
+      .btn.danger {
+        background: #fee2e2;
+        border-color: #fecaca;
+        color: #b91c1c;
+      }
+
+      .item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        margin-bottom: 12px;
+        background: #f9fafb;
+      }
+      .info {
+        flex: 1;
+        margin: 0 10px;
+      }
+      .title {
+        font-weight: 600;
+        margin-bottom: 6px;
+      }
+      .mode {
+        margin-bottom: 6px;
+      }
+      .controls {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+      }
+      button {
+        border: none;
+        padding: 6px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: bold;
+      }
+      .minus {
+        background: #fee2e2;
+        color: #b91c1c;
+      }
+      .plus {
+        background: #dcfce7;
+        color: #15803d;
+      }
+      .modeBtn {
+        padding: 4px 10px;
+        border: 1px solid #d1d5db;
+        background: #fff;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 12px;
+      }
+      .modeBtn.active {
+        background: #2563eb;
+        color: #fff;
+        border-color: #2563eb;
+      }
+      .subtotal {
+        font-weight: 700;
+      }
+      .hint {
+        font-size: 12px;
+        color: #6b7280;
+        margin-top: 4px;
+      }
+      .qtyInput {
+        width: 72px;
+        text-align: center;
+        padding: 6px 8px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        background: #fff;
+        font-weight: 600;
+      }
+      .total {
+        margin-top: 20px;
+        padding: 12px;
+        border-top: 2px solid #e5e7eb;
+        text-align: right;
+        font-size: 1.2rem;
+        font-weight: 800;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <h1>🍩 Calculadora</h1>
+      <div class="toolbar">
+        <button id="resetBtn" class="btn danger">🗑️ Reiniciar</button>
+      </div>
+
+      <!-- CHURROS -->
+      <div class="item" data-type="churros">
+        <div class="info">
+          <div class="title">🥖 Churros</div>
+          <div class="mode">
+            <button class="modeBtn active" data-mode="pack">
+              Paquete (4x $10)
+            </button>
+            <button class="modeBtn" data-mode="piece">Pieza</button>
+          </div>
+          <div class="subtotal">$0.00</div>
+          <div class="hint"></div>
+        </div>
+        <div class="controls">
+          <button class="minus">-</button>
+          <input class="qtyInput" type="number" min="0" value="0" />
+          <button class="plus">+</button>
+        </div>
+      </div>
+
+      <!-- BOLITAS -->
+      <div class="item" data-type="bolitas">
+        <div class="info">
+          <div class="title">🍡 Bolitas</div>
+          <div class="mode">
+            <button class="modeBtn active" data-mode="pack">
+              Paquete (12x $5)
+            </button>
+            <button class="modeBtn" data-mode="piece">Pieza</button>
+          </div>
+          <div class="subtotal">$0.00</div>
+          <div class="hint"></div>
+        </div>
+        <div class="controls">
+          <button class="minus">-</button>
+          <input class="qtyInput" type="number" min="0" value="0" />
+          <button class="plus">+</button>
+        </div>
+      </div>
+
+      <!-- DONA AZÚCAR -->
+      <div class="item" data-type="donaAzucar">
+        <div class="info">
+          <div class="title">🍩 Dona de Azúcar ($4 c/u)</div>
+          <div class="subtotal">$0.00</div>
+          <div class="hint"></div>
+        </div>
+        <div class="controls">
+          <button class="minus">-</button>
+          <input class="qtyInput" type="number" min="0" value="0" />
+          <button class="plus">+</button>
+        </div>
+      </div>
+
+      <!-- DONA CHOCOLATE -->
+      <div class="item" data-type="donaChoco">
+        <div class="info">
+          <div class="title">🍫 Dona de Chocolate ($5 c/u)</div>
+          <div class="subtotal">$0.00</div>
+          <div class="hint"></div>
+        </div>
+        <div class="controls">
+          <button class="minus">-</button>
+          <input class="qtyInput" type="number" min="0" value="0" />
+          <button class="plus">+</button>
+        </div>
+      </div>
+
+      <!-- EMPANADA -->
+      <div class="item" data-type="empanada">
+        <div class="info">
+          <div class="title">🥟 Empanada ($6 c/u)</div>
+          <div class="subtotal">$0.00</div>
+          <div class="hint"></div>
+        </div>
+        <div class="controls">
+          <button class="minus">-</button>
+          <input class="qtyInput" type="number" min="0" value="0" />
+          <button class="plus">+</button>
+        </div>
+      </div>
+
+      <div class="total">Total: $<span id="grandTotal">0.00</span></div>
+    </div>
+
+    <script>
+      const prices = {
+        churros: {
+          pack: { qty: 4, price: 10 },
+          piece: { qty: 1, price: 10 / 4 },
+        },
+        bolitas: {
+          pack: { qty: 12, price: 5 },
+          piece: { qty: 1, price: 5 / 12 },
+        },
+        donaAzucar: { piece: { qty: 1, price: 4 } },
+        donaChoco: { piece: { qty: 1, price: 5 } },
+        empanada: { piece: { qty: 1, price: 6 } },
+      };
+
+      const app = document.querySelector('.app');
+      const resetBtn = document.getElementById('resetBtn');
+
+      function calcHint(type, mode, qty) {
+        const cfg = prices[type][mode];
+        if (!cfg) return '';
+        if (mode === 'pack' && cfg.qty > 1) {
+          const piezas = qty * cfg.qty;
+          const label = type === 'bolitas' ? 'bolitas' : 'churros';
+          return `Equivale a ${piezas} ${label}`;
+        }
+        if (mode === 'piece') {
+          const label =
+            type === 'bolitas'
+              ? 'bolitas'
+              : type === 'churros'
+              ? 'churros'
+              : 'piezas';
+          return `${qty} ${label}`;
+        }
+        return '';
+      }
+
+      function update() {
+        let total = 0;
+        document.querySelectorAll('.item').forEach((item) => {
+          const type = item.dataset.type;
+          const modeBtn = item.querySelector('.modeBtn.active');
+          const mode = modeBtn ? modeBtn.dataset.mode : 'piece';
+          const qtyEl = item.querySelector('.qtyInput');
+          const qty = Math.max(0, parseInt(qtyEl.value) || 0);
+          qtyEl.value = qty; // normaliza
+          const p = prices[type][mode];
+          const subtotal = qty * (p?.price || 0);
+          item.querySelector('.subtotal').textContent = `$${subtotal.toFixed(
+            2
+          )}`;
+          const hintEl = item.querySelector('.hint');
+          if (hintEl) hintEl.textContent = calcHint(type, mode, qty);
+          total += subtotal;
+        });
+        document.getElementById('grandTotal').textContent = total.toFixed(2);
+      }
+
+      app.addEventListener('click', (e) => {
+        if (
+          e.target.classList.contains('plus') ||
+          e.target.classList.contains('minus')
+        ) {
+          const item = e.target.closest('.item');
+          const qtyEl = item.querySelector('.qtyInput');
+          let q = parseInt(qtyEl.value) || 0;
+          if (e.target.classList.contains('plus')) q++;
+          else q = Math.max(0, q - 1);
+          qtyEl.value = q;
+          update();
+        }
+        if (e.target.classList.contains('modeBtn')) {
+          const parent = e.target.parentElement;
+          parent
+            .querySelectorAll('.modeBtn')
+            .forEach((b) => b.classList.remove('active'));
+          e.target.classList.add('active');
+          update();
+        }
+      });
+
+      app.addEventListener('input', (e) => {
+        if (e.target.classList.contains('qtyInput')) {
+          const v = Math.max(0, parseInt(e.target.value || '0'));
+          e.target.value = v;
+          update();
+        }
+      });
+
+      resetBtn.addEventListener('click', () => {
+        document
+          .querySelectorAll('.qtyInput')
+          .forEach((inp) => (inp.value = 0));
+        update();
+      });
+
+      update();
+    </script>
+  </body>
+</html>
